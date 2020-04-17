@@ -1,16 +1,14 @@
 <?php
-namespace blend;
+namespace corrections\blend;
 
-class errors extends \Blend
+class corrections extends \Blend
 {
-    public $label = 'Errors';
-    public $linetypes = ['error'];
+    public $label = 'Corrections';
+    public $linetypes = ['correction'];
 
     public function __construct()
     {
         $this->groupby = 'date';
-        $this->cum = true;
-        $this->past = false;
         $this->fields = [
             (object) [
                 'name' => 'date',
@@ -18,13 +16,8 @@ class errors extends \Blend
                 'main' => true,
             ],
             (object) [
-                'name' => 'correctiondate',
+                'name' => 'errordate',
                 'type' => 'date',
-            ],
-            (object) [
-                'name' => 'errorclaimdate',
-                'type' => 'date',
-                'sacrifice' => true,
             ],
             (object) [
                 'name' => 'correctionclaimdate',
@@ -32,21 +25,23 @@ class errors extends \Blend
                 'sacrifice' => true,
             ],
             (object) [
+                'name' => 'errorclaimdate',
+                'type' => 'date',
+                'sacrifice' => true,
+            ],
+            (object) [
                 'name' => 'net',
                 'type' => 'number',
-                'summary' => 'sum',
                 'dp' => 2,
             ],
             (object) [
                 'name' => 'gst',
                 'type' => 'number',
-                'summary' => 'sum',
                 'dp' => 2,
             ],
             (object) [
                 'name' => 'amount',
                 'type' => 'number',
-                'summary' => 'sum',
                 'dp' => 2,
             ],
             (object) [
