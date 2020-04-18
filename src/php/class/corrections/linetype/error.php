@@ -31,7 +31,6 @@ class error extends \Linetype
                 'name' => 'account',
                 'type' => 'text',
                 'fuse' => "'error'",
-                'derived' => true,
             ],
             (object) [
                 'name' => 'correctiondate',

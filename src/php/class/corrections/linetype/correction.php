@@ -30,8 +30,7 @@ class correction extends \Linetype
             (object) [
                 'name' => 'account',
                 'type' => 'text',
-                'fuse' => "'correction'",
-                'derived' => true,
+                'fuse' => "correctiontransaction.account",
             ],
             (object) [
                 'name' => 'claimdate',
@@ -85,7 +84,7 @@ class correction extends \Linetype
                 'name' => 'broken',
                 'type' => 'text',
                 'derived' => true,
-                'fuse' => "if (errortransaction.account != 'error' or correctiontransaction.account != 'correction' or errortransaction.amount + correctiontransaction.amount != 0 or errortransaction_gstpeer_gst.amount + correctiontransaction_gstpeer_gst.amount != 0, 'broken', '')",
+                'fuse' => "if (errortransaction.amount + correctiontransaction.amount != 0 or errortransaction_gstpeer_gst.amount + correctiontransaction_gstpeer_gst.amount != 0, 'broken', '')",
             ],
         ];
         $this->inlinelinks = [
@@ -102,7 +101,7 @@ class correction extends \Linetype
         ];
         $this->unfuse_fields = [
             'correctiontransaction.date' => ':date',
-            'correctiontransaction.account' => "'correction'",
+            'correctiontransaction.account' => ":account",
             'correctiontransaction.amount' => ':net',
             'correctiontransaction.description' => ':description',
 
@@ -117,7 +116,7 @@ class correction extends \Linetype
             'correctiontransaction_gstird_gst.description' => "if(if(:gst > 0, 'sale', 'purchase') <> :sort, :sort, null)",
 
             'errortransaction.date' => ':errordate',
-            'errortransaction.account' => "'error'",
+            'errortransaction.account' => ":account",
             'errortransaction.amount' => '-:net',
             'errortransaction.description' => ':description',
 
