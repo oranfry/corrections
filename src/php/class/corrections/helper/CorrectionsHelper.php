@@ -5,7 +5,7 @@ class CorrectionsHelper
 {
     public static function exclude_corrections($linetype)
     {
-        $linetype->clauses[] = 'correctioncorrection.id is null and errorcorrection.id is null';
+        $linetype->clauses[] = '{t}_correctioncorrection.id is null and {t}_errorcorrection.id is null';
         $linetype->inlinelinks = array_merge(
             $linetype->inlinelinks,
             [
