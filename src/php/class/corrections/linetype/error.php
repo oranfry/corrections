@@ -19,58 +19,58 @@ class error extends \Linetype
                 'name' => 'hasgst',
                 'type' => 'icon',
                 'derived' => true,
-                'fuse' => "if ({t}_errortransaction_gstpeer_gst.amount != 0, 'moneytake', '')",
+                'borrow' => "{t_correctiontransaction_hasgst}",
             ],
             (object) [
                 'name' => 'date',
                 'type' => 'date',
-                'fuse' => '{t}_errortransaction.date',
                 'main' => true,
+                'borrow' => "{t_errortransaction_date}",
             ],
             (object) [
                 'name' => 'account',
                 'type' => 'text',
-                'fuse' => '{t}_correctiontransaction.account',
-            ],
-            (object) [
-                'name' => 'correctiondate',
-                'type' => 'date',
-                'fuse' => '{t}_correctiontransaction.date',
+                'borrow' => "{t_correctiontransaction_account}",
             ],
             (object) [
                 'name' => 'claimdate',
                 'type' => 'date',
-                'fuse' => '{t}_errortransaction_gstird_gst.date',
+                'borrow' => "{t_errortransaction_claimdate}",
+            ],
+            (object) [
+                'name' => 'correctiondate',
+                'type' => 'date',
+                'borrow' => "{t_correctiontransaction_date}",
             ],
             (object) [
                 'name' => 'correctionclaimdate',
                 'type' => 'date',
-                'fuse' => '{t}_correctiontransaction_gstird_gst.date',
+                'borrow' => "{t_correctiontransaction_claimdate}",
             ],
             (object) [
                 'name' => 'sort',
                 'type' => 'text',
-                'fuse' => "coalesce(if({t}_errortransaction_gstpeer_gst.description in ('sale', 'purchase'), {t}_errortransaction_gstpeer_gst.description, null), if({t}_errortransaction_gstpeer_gst.amount > 0, 'sale', 'purchase'))",
                 'constrain' => true,
+                'borrow' => "{t_correctiontransaction_sort}",
             ],
             (object) [
                 'name' => 'description',
                 'type' => 'text',
-                'fuse' => "{t}_errortransaction.description",
+                'borrow' => "{t_correctiontransaction_description}",
             ],
             (object) [
                 'name' => 'net',
                 'type' => 'number',
                 'dp' => 2,
                 'summary' => 'sum',
-                'fuse' => '{t}_errortransaction.amount',
+                'borrow' => "-{t_correctiontransaction_net}",
             ],
             (object) [
                 'name' => 'gst',
                 'type' => 'number',
                 'dp' => 2,
                 'summary' => 'sum',
-                'fuse' => '{t}_errortransaction_gstpeer_gst.amount',
+                'borrow' => "-{t_correctiontransaction_gst}",
             ],
             (object) [
                 'name' => 'amount',
@@ -78,7 +78,7 @@ class error extends \Linetype
                 'dp' => 2,
                 'derived' => true,
                 'summary' => 'sum',
-                'fuse' => 'ifnull({t}_errortransaction.amount, 0) + ifnull({t}_errortransaction_gstpeer_gst.amount, 0)',
+                'borrow' => "-{t_correctiontransaction_amount}",
             ],
             (object) [
                 'name' => 'broken',
@@ -99,50 +99,38 @@ class error extends \Linetype
                 'required' => true,
             ],
         ];
-        $this->unfuse_fields = [
-            'errortransaction.date' => ':date',
-            'errortransaction.account' => ':account',
-            'errortransaction.amount' => ':net',
-            'errortransaction.description' => ':description',
+    }
 
-            'errortransaction_gstpeer_gst.date' => ':date',
-            'errortransaction_gstpeer_gst.account' => "'gst'",
-            'errortransaction_gstpeer_gst.amount' => ':gst',
-            'errortransaction_gstpeer_gst.description' => "if(if(:gst > 0, 'sale', 'purchase') <> :sort, :sort, null)",
+    public function has($line, $child)
+    {
+        return in_array($child, ['errortransaction', 'correctiontransaction']);
+    }
 
-            'errortransaction_gstird_gst.date' => ':claimdate',
-            'errortransaction_gstird_gst.account' => "'gst'",
-            'errortransaction_gstird_gst.amount' => '-:gst',
-            'errortransaction_gstird_gst.description' => "if(if(:gst > 0, 'sale', 'purchase') <> :sort, :sort, null)",
+    public function unpack($line)
+    {
+        $line->errortransaction = (object) [
+            'date' => $line->date,
+            'claimdate' => $line->claimdate,
+            'account' => $line->account,
+            'net' => $line->net,
+            'gst' => $line->gst,
+            'description' => $line->description,
+            'sort' => $line->sort,
+        ];
 
-            'correctiontransaction.date' => ':correctiondate',
-            'correctiontransaction.account' => ':account',
-            'correctiontransaction.amount' => '-:net',
-            'correctiontransaction.description' => ':description',
-
-            'correctiontransaction_gstpeer_gst.date' => ':correctiondate',
-            'correctiontransaction_gstpeer_gst.account' => "'gst'",
-            'correctiontransaction_gstpeer_gst.amount' => '-:gst',
-            'correctiontransaction_gstpeer_gst.description' => "if(if(:gst < 0, 'sale', 'purchase') <> :sort, :sort, null)",
-
-            'correctiontransaction_gstird_gst.date' => ':correctionclaimdate',
-            'correctiontransaction_gstird_gst.account' => "'gst'",
-            'correctiontransaction_gstird_gst.amount' => ':gst',
-            'correctiontransaction_gstird_gst.description' => "if(if(:gst < 0, 'sale', 'purchase') <> :sort, :sort, null)",
+        $line->correctiontransaction = (object) [
+            'date' => $line->errordate,
+            'claimdate' => $line->errorclaimdate,
+            'account' => $line->account,
+            'net' => bcmul('-1', $line->net, 2),
+            'gst' => bcmul('-1', $line->gst, 2),
+            'description' => $line->description,
+            'sort' => $line->sort,
         ];
     }
 
-    public function has($line, $assoc) {
-        if (in_array($assoc, ['errortransaction', 'correctiontransaction',])) {
-            return true;
-        }
-
-        if (in_array($assoc, ['errortransaction_gstpeer_gst', 'errortransaction_gstird_gst', 'correctiontransaction_gstpeer_gst', 'correctiontransaction_gstird_gst',])) {
-            return $line->gst != 0;
-        }
-    }
-
-    public function get_suggested_values() {
+    public function get_suggested_values()
+    {
         $suggestions = [];
         $suggestions['sort'] = ['purchase', 'sale'];
         return $suggestions;
@@ -152,8 +140,8 @@ class error extends \Linetype
     {
         $gstperiod = \Period::load('gst');
 
-        if (!@$line->correctiondate) {
-            $line->correctiondate = date('Y-m-d');
+        if (!@$line->date) {
+            $line->date = date('Y-m-d');
         }
 
         if (!@$line->claimdate) {
@@ -169,11 +157,11 @@ class error extends \Linetype
     {
         $errors = [];
 
-        if ($line->date == null) {
+        if (@$line->correctiondate == null) {
             $errors[] = 'no error date';
         }
 
-        if (!@$line->sort) {
+        if (@$line->gst != 0 && !@$line->sort) {
             $errors[] = 'no sort';
         }
 
