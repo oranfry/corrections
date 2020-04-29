@@ -119,8 +119,8 @@ class error extends \Linetype
         ];
 
         $line->correctiontransaction = (object) [
-            'date' => $line->errordate,
-            'claimdate' => $line->errorclaimdate,
+            'date' => $line->correctiondate,
+            'claimdate' => $line->correctiondate,
             'account' => $line->account,
             'net' => bcmul('-1', $line->net, 2),
             'gst' => bcmul('-1', $line->gst, 2),
