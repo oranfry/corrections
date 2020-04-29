@@ -120,7 +120,7 @@ class error extends \Linetype
 
         $line->correctiontransaction = (object) [
             'date' => $line->correctiondate,
-            'claimdate' => $line->correctiondate,
+            'claimdate' => $line->correctionclaimdate,
             'account' => $line->account,
             'net' => bcmul('-1', $line->net, 2),
             'gst' => bcmul('-1', $line->gst, 2),
