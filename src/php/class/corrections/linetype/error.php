@@ -78,7 +78,7 @@ class error extends \Linetype
                 'dp' => 2,
                 'derived' => true,
                 'summary' => 'sum',
-                'borrow' => "-{t_correctiontransaction_amount}",
+                'borrow' => "-({t_correctiontransaction_amount})",
             ],
             (object) [
                 'name' => 'broken',
