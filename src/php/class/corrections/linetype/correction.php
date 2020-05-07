@@ -59,6 +59,11 @@ class correction extends \Linetype
                 'borrow' => "{t_correctiontransaction_description}",
             ],
             (object) [
+                'name' => 'created',
+                'type' => 'text',
+                'fuse' => "{t}.created",
+            ],
+            (object) [
                 'name' => 'net',
                 'type' => 'number',
                 'dp' => 2,
