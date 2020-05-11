@@ -118,9 +118,9 @@ class correction extends \Linetype
             'claimdate' => $line->claimdate,
             'account' => $line->account,
             'net' => $line->net,
-            'gst' => $line->gst,
-            'description' => $line->description,
-            'sort' => $line->sort,
+            'gst' => @$line->gst,
+            'description' => @$line->description,
+            'sort' => @$line->sort,
         ];
 
         $line->errortransaction = (object) [
@@ -128,9 +128,9 @@ class correction extends \Linetype
             'claimdate' => $line->errorclaimdate,
             'account' => $line->account,
             'net' => bcmul('-1', $line->net, 2),
-            'gst' => bcmul('-1', $line->gst, 2),
-            'description' => $line->description,
-            'sort' => $line->sort,
+            'gst' => @$line->gst ? bcmul('-1', $line->gst, 2) : null,
+            'description' => @$line->description,
+            'sort' => @$line->sort,
         ];
     }
 
