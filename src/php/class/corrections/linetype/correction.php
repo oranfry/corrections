@@ -134,10 +134,11 @@ class correction extends \Linetype
         ];
     }
 
-    public function get_suggested_values()
+    public function get_suggested_values($token)
     {
         $suggestions = [];
         $suggestions['sort'] = ['purchase', 'sale'];
+
         return $suggestions;
     }
 
