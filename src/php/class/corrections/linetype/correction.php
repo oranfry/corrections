@@ -8,94 +8,62 @@ class correction extends \Linetype
         $this->table = 'correction';
         $this->label = 'Correction';
         $this->icon = 'tick-o';
-        $this->fields = [
-            (object) [
-                'name' => 'icon',
-                'type' => 'text',
-                'fuse' => "'tick-o'",
-                'derived' => true,
-            ],
-            (object) [
-                'name' => 'hasgst',
-                'type' => 'icon',
-                'derived' => true,
-                'borrow' => "{t_correctiontransaction_hasgst}",
-            ],
-            (object) [
-                'name' => 'date',
-                'type' => 'date',
-                'main' => true,
-                'borrow' => "{t_correctiontransaction_date}",
-            ],
-            (object) [
-                'name' => 'account',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_account}",
-            ],
-            (object) [
-                'name' => 'claimdate',
-                'type' => 'date',
-                'borrow' => "{t_correctiontransaction_claimdate}",
-            ],
-            (object) [
-                'name' => 'errordate',
-                'type' => 'date',
-                'borrow' => "{t_errortransaction_date}",
-            ],
-            (object) [
-                'name' => 'errorclaimdate',
-                'type' => 'date',
-                'borrow' => "{t_errortransaction_claimdate}",
-            ],
-            (object) [
-                'name' => 'sort',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_sort}",
-            ],
-            (object) [
-                'name' => 'invert',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_invert}",
-            ],
-            (object) [
-                'name' => 'description',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_description}",
-            ],
-            (object) [
-                'name' => 'created',
-                'type' => 'text',
-                'fuse' => "{t}.created",
-            ],
-            (object) [
-                'name' => 'net',
-                'type' => 'number',
-                'dp' => 2,
-                'summary' => 'sum',
-                'borrow' => "{t_correctiontransaction_net}",
-            ],
-            (object) [
-                'name' => 'gst',
-                'type' => 'number',
-                'dp' => 2,
-                'summary' => 'sum',
-                'borrow' => "{t_correctiontransaction_gst}",
-            ],
-            (object) [
-                'name' => 'amount',
-                'type' => 'number',
-                'dp' => 2,
-                'derived' => true,
-                'summary' => 'sum',
-                'borrow' => "{t_correctiontransaction_amount}",
-            ],
-            (object) [
-                'name' => 'broken',
-                'type' => 'text',
-                'derived' => true,
-                'fuse' => "if ({t}_errortransaction.amount + {t}_correctiontransaction.amount != 0 or {t}_errortransaction_gstpeer_gst.amount + {t}_correctiontransaction_gstpeer_gst.amount != 0, 'broken', '')",
-            ],
+        $this->borrow = [
+            'hasgst' => function ($line) : bool {
+                return (bool) $line->correctiontransaction->hasgst;
+            },
+            'date' => function ($line) : string {
+                return $line->correctiontransaction->date;
+            },
+            'account' => function ($line) : string {
+                return $line->correctiontransaction->account;
+            },
+            'claimdate' => function ($line) : string {
+                return $line->correctiontransaction->claimdate;
+            },
+            'errordate' => function ($line) : string {
+                return $line->errortransaction->date;
+            },
+            'errorclaimdate' => function ($line) : string {
+                return $line->errortransaction->claimdate;
+            },
+            'invert' => function ($line) : string {
+                return $line->correctiontransaction->invert;
+            },
+            'description' => function ($line) : ?string {
+                return @$line->correctiontransaction->description;
+            },
+            'net' => function ($line) : string {
+                return $line->correctiontransaction->net;
+            },
+            'gst' => function ($line) : string {
+                return $line->correctiontransaction->gst;
+            },
+            'amount' => function ($line) : string {
+                return $line->correctiontransaction->amount;
+            },
         ];
+
+        $this->fields = [
+            'icon' => function ($records) {
+                return "tick-o";
+            },
+            'created' => function ($records) {
+                return $records['/']->created;
+            },
+            'broken' => function ($records) {
+                if (@$records['/errortransaction']->amount + @$records['/correctiontransaction']->amount != 0) {
+                    return 'Error-Correction Imbalance';
+                }
+
+                if (@$record['/errortransaction/gstpeer_gst']->amount + @$record['/correctiontransaction/gstpeer_gst']->amount != 0) {
+                    return 'Error-Correction GST Imbalance';
+                }
+
+                return null;
+            },
+        ];
+
         $this->inlinelinks = [
             (object) [
                 'tablelink' => 'correctioncorrection',
