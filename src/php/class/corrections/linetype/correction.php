@@ -49,7 +49,7 @@ class correction extends \Linetype
                 return "tick-o";
             },
             'created' => function ($records) {
-                return $records['/']->created;
+                return @$records['/']->created;
             },
             'broken' => function ($records) {
                 if (@$records['/errortransaction']->amount + @$records['/correctiontransaction']->amount != 0) {
