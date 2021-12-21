@@ -92,7 +92,7 @@ class correction extends \Linetype
             'net' => $line->net,
             'gst' => @$line->gst,
             'description' => @$line->description,
-            'sort' => @$line->sort,
+            'invert' => @$line->invert,
         ];
 
         $line->errortransaction = (object) [
@@ -102,14 +102,14 @@ class correction extends \Linetype
             'net' => bcmul('-1', $line->net, 2),
             'gst' => @$line->gst ? bcmul('-1', $line->gst, 2) : null,
             'description' => @$line->description,
-            'sort' => @$line->sort,
+            'invert' => @$line->invert,
         ];
     }
 
     public function get_suggested_values($token)
     {
         $suggestions = [];
-        $suggestions['sort'] = ['purchase', 'sale'];
+        $suggestions['invert'] = ['', 'yes'];
 
         return $suggestions;
     }
@@ -137,10 +137,6 @@ class correction extends \Linetype
 
         if (@$line->errordate == null) {
             $errors[] = 'no error date';
-        }
-
-        if (@$line->gst != 0 && !@$line->sort) {
-            $errors[] = 'no sort';
         }
 
         return $errors;

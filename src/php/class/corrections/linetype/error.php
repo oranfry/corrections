@@ -50,8 +50,12 @@ class error extends \Linetype
             (object) [
                 'name' => 'sort',
                 'type' => 'text',
-                'constrain' => true,
                 'borrow' => "{t_correctiontransaction_sort}",
+            ],
+            (object) [
+                'name' => 'invert',
+                'type' => 'text',
+                'borrow' => "{t_correctiontransaction_invert}",
             ],
             (object) [
                 'name' => 'description',
@@ -120,7 +124,7 @@ class error extends \Linetype
             'net' => $line->net,
             'gst' => @$line->gst,
             'description' => @$line->description,
-            'sort' => @$line->sort,
+            'invert' => @$line->invert,
         ];
 
         $line->correctiontransaction = (object) [
@@ -130,14 +134,14 @@ class error extends \Linetype
             'net' => bcmul('-1', $line->net, 2),
             'gst' => @$line->gst ? bcmul('-1', $line->gst, 2) : null,
             'description' => @$line->description,
-            'sort' => @$line->sort,
+            'invert' => @$line->invert,
         ];
     }
 
     public function get_suggested_values($token)
     {
         $suggestions = [];
-        $suggestions['sort'] = ['purchase', 'sale'];
+        $suggestions['invert'] = ['', 'yes'];
 
         return $suggestions;
     }
@@ -165,10 +169,6 @@ class error extends \Linetype
 
         if (@$line->correctiondate == null) {
             $errors[] = 'no error date';
-        }
-
-        if (@$line->gst != 0 && !@$line->sort) {
-            $errors[] = 'no sort';
         }
 
         return $errors;
