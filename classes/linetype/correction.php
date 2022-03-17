@@ -1,7 +1,8 @@
 <?php
+
 namespace corrections\linetype;
 
-class correction extends \Linetype
+class correction extends \jars\Linetype
 {
     public function __construct()
     {
@@ -83,7 +84,7 @@ class correction extends \Linetype
         return in_array($child, ['errortransaction', 'correctiontransaction']);
     }
 
-    public function unpack($line)
+    public function unpack($line, $oldline, $old_inlines)
     {
         $line->correctiontransaction = (object) [
             'date' => $line->date,
@@ -114,7 +115,7 @@ class correction extends \Linetype
         return $suggestions;
     }
 
-    public function complete($line)
+    public function complete($line) : void
     {
         $gstperiod = \Period::load('gst');
 

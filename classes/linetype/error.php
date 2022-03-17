@@ -1,7 +1,8 @@
 <?php
+
 namespace corrections\linetype;
 
-class error extends \Linetype
+class error extends \jars\Linetype
 {
     public function __construct()
     {
@@ -146,7 +147,7 @@ class error extends \Linetype
         return $suggestions;
     }
 
-    public function complete($line)
+    public function complete($line) : void
     {
         $gstperiod = \Period::load('gst');
 

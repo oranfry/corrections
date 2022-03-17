@@ -1,4 +1,5 @@
 <?php
+
 namespace corrections\helper;
 
 class CorrectionsHelper
