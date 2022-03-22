@@ -9,114 +9,49 @@ class error extends \jars\Linetype
         $this->table = 'correction';
         $this->label = 'Error';
         $this->icon = 'times-o';
-        $this->fields = [
-            (object) [
-                'name' => 'icon',
-                'type' => 'text',
-                'fuse' => "'times-o'",
-                'derived' => true,
-            ],
-            (object) [
-                'name' => 'hasgst',
-                'type' => 'icon',
-                'derived' => true,
-                'borrow' => "{t_correctiontransaction_hasgst}",
-            ],
-            (object) [
-                'name' => 'date',
-                'type' => 'date',
-                'main' => true,
-                'borrow' => "{t_errortransaction_date}",
-            ],
-            (object) [
-                'name' => 'account',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_account}",
-            ],
-            (object) [
-                'name' => 'claimdate',
-                'type' => 'date',
-                'borrow' => "{t_errortransaction_claimdate}",
-            ],
-            (object) [
-                'name' => 'correctiondate',
-                'type' => 'date',
-                'borrow' => "{t_correctiontransaction_date}",
-            ],
-            (object) [
-                'name' => 'correctionclaimdate',
-                'type' => 'date',
-                'borrow' => "{t_correctiontransaction_claimdate}",
-            ],
-            (object) [
-                'name' => 'sort',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_sort}",
-            ],
-            (object) [
-                'name' => 'invert',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_invert}",
-            ],
-            (object) [
-                'name' => 'description',
-                'type' => 'text',
-                'borrow' => "{t_correctiontransaction_description}",
-            ],
-            (object) [
-                'name' => 'created',
-                'type' => 'text',
-                'fuse' => "{t}.created",
-            ],
-            (object) [
-                'name' => 'net',
-                'type' => 'number',
-                'dp' => 2,
-                'summary' => 'sum',
-                'borrow' => "-{t_correctiontransaction_net}",
-            ],
-            (object) [
-                'name' => 'gst',
-                'type' => 'number',
-                'dp' => 2,
-                'summary' => 'sum',
-                'borrow' => "-{t_correctiontransaction_gst}",
-            ],
-            (object) [
-                'name' => 'amount',
-                'type' => 'number',
-                'dp' => 2,
-                'derived' => true,
-                'summary' => 'sum',
-                'borrow' => "-({t_correctiontransaction_amount})",
-            ],
-            (object) [
-                'name' => 'broken',
-                'type' => 'text',
-                'derived' => true,
-                'fuse' => "if ({t}_errortransaction.amount + {t}_correctiontransaction.amount != 0 or {t}_errortransaction_gstpeer_gst.amount + {t}_correctiontransaction_gstpeer_gst.amount != 0, 'broken', '')",
-            ],
+
+        $this->borrow = [
+            'date' => fn ($line) : string => $line->errortransaction->date,
+            'account' => fn ($line) : string => $line->correctiontransaction->account,
+            'claimdate' => fn ($line) : ?string => $line->errortransaction->claimdate,
+            'correctiondate' => fn ($line) : string => $line->correctiontransaction->date,
+            'correctionclaimdate' => fn ($line) : ?string => $line->correctiontransaction->claimdate,
+            'invert' => fn ($line) : bool => $line->correctiontransaction->invert,
+            'description' => fn ($line) : ?string => $line->correctiontransaction->description,
+            'net' => fn ($line) : string => bcsub('0', $line->correctiontransaction->net, 2),
+            'gst' => fn ($line) : ?string => bcsub('0', $line->correctiontransaction->gst, 2),
+            'amount' => fn ($line) : string => bcsub('0', $line->correctiontransaction->amount, 2),
         ];
+
+        $this->fields = [
+            'broken' => function ($records) {
+                if (@$records['/errortransaction']->amount + @$records['/correctiontransaction']->amount != 0) {
+                    return 'Error-Correction Imbalance';
+                }
+
+                if (@$record['/errortransaction/gstpeer_gst']->amount + @$record['/correctiontransaction/gstpeer_gst']->amount != 0) {
+                    return 'Error-Correction GST Imbalance';
+                }
+
+                return null;
+            },
+        ];
+
         $this->inlinelinks = [
             (object) [
-                'tablelink' => 'correctioncorrection',
+                'tablelink' => 'correction_correction',
                 'linetype' => 'transaction',
-                'required' => true,
+                'property' => 'correctiontransaction',
             ],
             (object) [
-                'tablelink' => 'correctionerror',
+                'tablelink' => 'correction_error',
                 'linetype' => 'transaction',
-                'required' => true,
+                'property' => 'errortransaction',
             ],
         ];
     }
 
-    public function has($line, $child)
-    {
-        return in_array($child, ['errortransaction', 'correctiontransaction']);
-    }
-
-    public function unpack($line)
+    public function unpack($line, $oldline, $old_inlines)
     {
         $line->errortransaction = (object) [
             'date' => $line->date,
@@ -139,28 +74,22 @@ class error extends \jars\Linetype
         ];
     }
 
-    public function get_suggested_values($token)
-    {
-        $suggestions = [];
-        $suggestions['invert'] = ['', 'yes'];
-
-        return $suggestions;
-    }
-
     public function complete($line) : void
     {
-        $gstperiod = \Period::load('gst');
-
         if (!@$line->date) {
             $line->date = date('Y-m-d');
         }
 
         if (!@$line->claimdate) {
-            $line->claimdate = date_shift($gstperiod->rawstart($line->date), "+{$gstperiod->step} +1 month -1 day");
+            $m = sprintf('%02d', (floor(substr($line->date, 5, 2) / 2) * 2 + 11) % 12 + 1);
+            $y = date('Y', strtotime($line->date)) - ($m > date('m', strtotime($line->date)) ? 1 : 0);
+            $line->claimdate = date_shift("$y-$m-01", "+3 month -1 day");
         }
 
         if (!@$line->correctionclaimdate) {
-            $line->correctionclaimdate = date_shift($gstperiod->rawstart($line->correctiondate), "+{$gstperiod->step} +1 month -1 day");
+            $m = sprintf('%02d', (floor(substr($line->correctiondate, 5, 2) / 2) * 2 + 11) % 12 + 1);
+            $y = date('Y', strtotime($line->correctiondate)) - ($m > date('m', strtotime($line->correctiondate)) ? 1 : 0);
+            $line->correctionclaimdate = date_shift("$y-$m-01", "+3 month -1 day");
         }
     }
 

@@ -7,51 +7,21 @@ class correction extends \jars\Linetype
     public function __construct()
     {
         $this->table = 'correction';
-        $this->label = 'Correction';
-        $this->icon = 'tick-o';
+
         $this->borrow = [
-            'hasgst' => function ($line) : bool {
-                return (bool) $line->correctiontransaction->hasgst;
-            },
-            'date' => function ($line) : string {
-                return $line->correctiontransaction->date;
-            },
-            'account' => function ($line) : string {
-                return $line->correctiontransaction->account;
-            },
-            'claimdate' => function ($line) : string {
-                return $line->correctiontransaction->claimdate;
-            },
-            'errordate' => function ($line) : string {
-                return $line->errortransaction->date;
-            },
-            'errorclaimdate' => function ($line) : string {
-                return $line->errortransaction->claimdate;
-            },
-            'invert' => function ($line) : string {
-                return $line->correctiontransaction->invert;
-            },
-            'description' => function ($line) : ?string {
-                return @$line->correctiontransaction->description;
-            },
-            'net' => function ($line) : string {
-                return $line->correctiontransaction->net;
-            },
-            'gst' => function ($line) : string {
-                return $line->correctiontransaction->gst;
-            },
-            'amount' => function ($line) : string {
-                return $line->correctiontransaction->amount;
-            },
+            'date' => fn ($line) : string => $line->correctiontransaction->date,
+            'account' => fn ($line) : string => $line->correctiontransaction->account,
+            'claimdate' => fn ($line) : ?string => $line->correctiontransaction->claimdate,
+            'errordate' => fn ($line) : string => $line->errortransaction->date,
+            'errorclaimdate' => fn ($line) : ?string => $line->errortransaction->claimdate,
+            'invert' => fn ($line) : bool => $line->correctiontransaction->invert,
+            'description' => fn ($line) : ?string => $line->correctiontransaction->description,
+            'net' => fn ($line) : string => $line->correctiontransaction->net,
+            'gst' => fn ($line) : ?string => $line->correctiontransaction->gst,
+            'amount' => fn ($line) : string => $line->correctiontransaction->amount,
         ];
 
         $this->fields = [
-            'icon' => function ($records) {
-                return "tick-o";
-            },
-            'created' => function ($records) {
-                return @$records['/']->created;
-            },
             'broken' => function ($records) {
                 if (@$records['/errortransaction']->amount + @$records['/correctiontransaction']->amount != 0) {
                     return 'Error-Correction Imbalance';
@@ -67,21 +37,16 @@ class correction extends \jars\Linetype
 
         $this->inlinelinks = [
             (object) [
-                'tablelink' => 'correctioncorrection',
                 'linetype' => 'transaction',
-                'required' => true,
+                'property' => 'correctiontransaction',
+                'tablelink' => 'correction_correction',
             ],
             (object) [
-                'tablelink' => 'correctionerror',
                 'linetype' => 'transaction',
-                'required' => true,
+                'property' => 'errortransaction',
+                'tablelink' => 'correction_error',
             ],
         ];
-    }
-
-    public function has($line, $child)
-    {
-        return in_array($child, ['errortransaction', 'correctiontransaction']);
     }
 
     public function unpack($line, $oldline, $old_inlines)
@@ -107,28 +72,22 @@ class correction extends \jars\Linetype
         ];
     }
 
-    public function get_suggested_values($token)
-    {
-        $suggestions = [];
-        $suggestions['invert'] = ['', 'yes'];
-
-        return $suggestions;
-    }
-
     public function complete($line) : void
     {
-        $gstperiod = \Period::load('gst');
-
         if (!@$line->date) {
             $line->date = date('Y-m-d');
         }
 
         if (!@$line->claimdate) {
-            $line->claimdate = date_shift($gstperiod->rawstart($line->date), "+{$gstperiod->step} +1 month -1 day");
+            $m = sprintf('%02d', (floor(substr($line->date, 5, 2) / 2) * 2 + 11) % 12 + 1);
+            $y = date('Y', strtotime($line->date)) - ($m > date('m', strtotime($line->date)) ? 1 : 0);
+            $line->claimdate = date_shift("$y-$m-01", "+3 month -1 day");
         }
 
         if (!@$line->errorclaimdate) {
-            $line->errorclaimdate = date_shift($gstperiod->rawstart($line->errordate), "+{$gstperiod->step} +1 month -1 day");
+            $m = sprintf('%02d', (floor(substr($line->errordate, 5, 2) / 2) * 2 + 11) % 12 + 1);
+            $y = date('Y', strtotime($line->errordate)) - ($m > date('m', strtotime($line->errordate)) ? 1 : 0);
+            $line->errorclaimdate = date_shift("$y-$m-01", "+3 month -1 day");
         }
     }
 
