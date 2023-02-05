@@ -17,7 +17,7 @@ class correction extends \jars\Linetype
             'invert' => fn ($line) : bool => $line->correctiontransaction->invert,
             'description' => fn ($line) : ?string => $line->correctiontransaction->description,
             'net' => fn ($line) : string => $line->correctiontransaction->net,
-            'gst' => fn ($line) : ?string => $line->correctiontransaction->gst,
+            'gst' => fn ($line) : ?string => @$line->correctiontransaction->gst,
             'amount' => fn ($line) : string => $line->correctiontransaction->amount,
         ];
 

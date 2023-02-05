@@ -7,8 +7,6 @@ class error extends \jars\Linetype
     public function __construct()
     {
         $this->table = 'correction';
-        $this->label = 'Error';
-        $this->icon = 'times-o';
 
         $this->borrow = [
             'date' => fn ($line) : string => $line->errortransaction->date,
@@ -18,9 +16,9 @@ class error extends \jars\Linetype
             'correctionclaimdate' => fn ($line) : ?string => $line->correctiontransaction->claimdate,
             'invert' => fn ($line) : bool => $line->correctiontransaction->invert,
             'description' => fn ($line) : ?string => $line->correctiontransaction->description,
-            'net' => fn ($line) : string => bcsub('0', $line->correctiontransaction->net, 2),
-            'gst' => fn ($line) : ?string => bcsub('0', $line->correctiontransaction->gst, 2),
-            'amount' => fn ($line) : string => bcsub('0', $line->correctiontransaction->amount, 2),
+            'net' => fn ($line) : string => bcsub('0', $line->correctiontransaction->net ?? '0', 2),
+            'gst' => fn ($line) : ?string => @$line->correctiontransaction->gst ? bcsub('0', $line->correctiontransaction->gst, 2) : null,
+            'amount' => fn ($line) : string => bcsub('0', $line->correctiontransaction->amount ?? '0', 2),
         ];
 
         $this->fields = [
