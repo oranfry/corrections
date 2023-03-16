@@ -39,12 +39,12 @@ class error extends \jars\Linetype
         $this->inlinelinks = [
             (object) [
                 'tablelink' => 'correction_correction',
-                'linetype' => 'transaction',
+                'linetype' => 'hiddentransaction',
                 'property' => 'correctiontransaction',
             ],
             (object) [
                 'tablelink' => 'correction_error',
-                'linetype' => 'transaction',
+                'linetype' => 'hiddentransaction',
                 'property' => 'errortransaction',
             ],
         ];
