@@ -15,6 +15,7 @@ class correction extends \jars\Linetype
             'errordate' => fn ($line) : string => $line->errortransaction->date,
             'errorclaimdate' => fn ($line) : ?string => $line->errortransaction->claimdate,
             'invert' => fn ($line) : bool => $line->correctiontransaction->invert,
+            'gsttype' => fn ($line) : ?string => $line->correctiontransaction->gsttype,
             'description' => fn ($line) : ?string => $line->correctiontransaction->description,
             'net' => fn ($line) : string => $line->correctiontransaction->net,
             'gst' => fn ($line) : ?string => @$line->correctiontransaction->gst,

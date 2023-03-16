@@ -15,6 +15,7 @@ class error extends \jars\Linetype
             'correctiondate' => fn ($line) : string => $line->correctiontransaction->date,
             'correctionclaimdate' => fn ($line) : ?string => $line->correctiontransaction->claimdate,
             'invert' => fn ($line) : bool => $line->correctiontransaction->invert,
+            'gsttype' => fn ($line) : ?string => $line->correctiontransaction->gsttype,
             'description' => fn ($line) : ?string => $line->correctiontransaction->description,
             'net' => fn ($line) : string => bcsub('0', $line->correctiontransaction->net ?? '0', 2),
             'gst' => fn ($line) : ?string => @$line->correctiontransaction->gst ? bcsub('0', $line->correctiontransaction->gst, 2) : null,
