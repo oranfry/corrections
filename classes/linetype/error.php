@@ -92,9 +92,9 @@ class error extends \jars\Linetype
         }
     }
 
-    public function validate($line)
+    public function validate($line): array
     {
-        $errors = [];
+        $errors = parent::validate($line);
 
         if (@$line->correctiondate == null) {
             $errors[] = 'no error date';
