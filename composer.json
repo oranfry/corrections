@@ -1,9 +1,8 @@
 {
     "autoload": {
         "psr-4": {
-            "corrections\\": "classes"
+            "corrections\\": ""
         }
     },
-    "name": "oranfry/corrections",
-    "version": "1.0.0"
+    "name": "oranfry/corrections"
 }
