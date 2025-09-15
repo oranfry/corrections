@@ -79,6 +79,15 @@ class error extends \jars\Linetype
             $line->date = date('Y-m-d');
         }
 
+        if (!@$line->net && !@$line->gst && @$line->amount) {
+            $sign = $line->amount < 0 ? '-' : '';
+            $abs = preg_replace('/^-/', '', $line->amount);
+            $line->net = $sign . bcmul('1', bcadd(bcdiv(bcmul($abs, '100', 3), '115', 3), '0.005', 3), 2);
+            $line->gst = bcsub($line->amount, $line->net, 2);
+        } else {
+            $line->amount = bcadd(@$line->net ?? '0.00', @$line->gst ?? '0.00', 2);
+        }
+
         if (!@$line->claimdate) {
             $m = sprintf('%02d', (floor(substr($line->date, 5, 2) / 2) * 2 + 11) % 12 + 1);
             $y = date('Y', strtotime($line->date)) - ($m > date('m', strtotime($line->date)) ? 1 : 0);

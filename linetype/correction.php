@@ -52,6 +52,8 @@ class correction extends \jars\Linetype
 
     public function unpack($line, $oldline, $old_inlines)
     {
+        parent::unpack($line, $oldline, $old_inlines);
+
         $line->correctiontransaction = (object) [
             'date' => $line->date,
             'claimdate' => $line->claimdate,
@@ -75,8 +77,19 @@ class correction extends \jars\Linetype
 
     public function complete($line) : void
     {
+        parent::complete($line);
+
         if (!@$line->date) {
             $line->date = date('Y-m-d');
+        }
+
+        if (!@$line->net && !@$line->gst && @$line->amount) {
+            $sign = $line->amount < 0 ? '-' : '';
+            $abs = preg_replace('/^-/', '', $line->amount);
+            $line->net = $sign . bcmul('1', bcadd(bcdiv(bcmul($abs, '100', 3), '115', 3), '0.005', 3), 2);
+            $line->gst = bcsub($line->amount, $line->net, 2);
+        } else {
+            $line->amount = bcadd(@$line->net ?? '0.00', @$line->gst ?? '0.00', 2);
         }
 
         if (!@$line->claimdate) {
