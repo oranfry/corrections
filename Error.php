@@ -1,8 +1,8 @@
 <?php
 
-namespace corrections\linetype;
+namespace OranFry\Corrections\Linetypes;
 
-class error extends \jars\Linetype
+class Error extends \OranFry\Jars\Core\Linetype
 {
     public function __construct()
     {
@@ -52,6 +52,8 @@ class error extends \jars\Linetype
 
     public function unpack($line, $oldline, $old_inlines)
     {
+        parent::unpack($line, $oldline, $old_inlines);
+
         $line->errortransaction = (object) [
             'date' => $line->date,
             'claimdate' => $line->claimdate,

@@ -1,8 +1,8 @@
 <?php
 
-namespace corrections\linetype;
+namespace OranFry\Corrections\Linetypes;
 
-class correction extends \jars\Linetype
+class Correction extends \OranFry\Jars\Core\Linetype
 {
     public function __construct()
     {
